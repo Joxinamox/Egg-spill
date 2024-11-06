@@ -1,0 +1,248 @@
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min nettside med eggspill</title>
+    <style>
+        .egg-container, .pan-container, .pot-container, .plate-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .egg {
+            width: 100px;
+            height: 140px;
+            background-color: #f0e68c;
+            border-radius: 50% 50% 40% 40%;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .pan, .pot {
+            width: 200px;
+            height: 200px;
+            background-color: #333;
+            border-radius: 50%;
+            position: relative;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .plate {
+            width: 300px;
+            height: 150px;
+            background-color: #f8f4e1;
+            border-radius: 20px;
+            text-align: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .message, .plate-message, .protein-message, .calories-message {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .cook-button, .new-egg-button, .restart-button, .egg-count-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #f0e68c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Velkommen til eggspillet!</h1>
+    
+    <div class="egg-container">
+        <div class="egg" onclick="moveToCookOptions()">Klikk for å klekke egget</div>
+    </div>
+
+    <p class="message" id="message">Prøv å klekke egget!</p>
+
+    <div class="button-container" id="cook-options" style="display: none;">
+        <button class="cook-button" onclick="selectPan()">Bruk stekepanne</button>
+        <button class="cook-button" onclick="selectPot()">Bruk gryte</button>
+    </div>
+
+    <div class="pan-container">
+        <div class="pan" id="pan">Stekepanne</div>
+    </div>
+    <div class="pot-container">
+        <div class="pot" id="pot">Gryte</div>
+    </div>
+
+    <div class="button-container" id="pan-buttons" style="display: none;">
+        <button class="cook-button" onclick="makeFriedEgg()">Lag speilegg</button>
+        <button class="cook-button" onclick="makeScrambledEgg()">Lag eggerøre</button>
+    </div>
+
+    <div class="button-container" id="pot-buttons" style="display: none;">
+        <button class="cook-button" onclick="makeHardBoiledEgg()">Lag hardkokt egg</button>
+        <button class="cook-button" onclick="makeSoftBoiledEgg()">Lag bløtkokt egg</button>
+    </div>
+
+    <div class="plate-container">
+        <div class="plate" id="plate">
+            <h3>Tallerken</h3>
+            <p class="plate-message" id="plate-message">Ingenting på tallerkenen enda.</p>
+        </div>
+        <p class="protein-message" id="protein-message">Total protein: 0 gram</p> <!-- Protein-teller -->
+        <p class="calories-message" id="calories-message">Totale kalorier: 0</p> <!-- Kalori-teller -->
+    </div>
+
+    <div class="button-container" id="action-buttons">
+        <button class="new-egg-button" onclick="resetEgg()">Lag et nytt egg</button>
+        <button class="restart-button" onclick="restartGame()">Start på nytt</button>
+        <button class="restart-button" onclick="eatAllEggs()">Spis alt</button> <!-- Ny knapp -->
+    </div>
+
+    <!-- Nytt valg for å lage flere egg -->
+    <div class="button-container" id="egg-count-options">
+        <button class="egg-count-button" onclick="chooseEggCount()">Velg antall egg</button>
+    </div>
+
+    <script>
+        let plateContent = [];
+        let totalCalories = 0;
+        const caloriesPerEgg = 80; // Kalorier per egg
+
+        function moveToCookOptions() {
+            const egg = document.querySelector('.egg');
+            const message = document.getElementById('message');
+            const cookOptions = document.getElementById('cook-options');
+            
+            egg.style.display = 'none';
+            cookOptions.style.display = 'flex';
+            message.textContent = "Velg tilberedningsmetode!";
+        }
+
+        function selectPan() {
+            document.getElementById('pan').style.display = 'flex';
+            document.getElementById('pan-buttons').style.display = 'flex';
+            document.getElementById('message').textContent = "Velg hvordan du vil steke egget!";
+            document.getElementById('cook-options').style.display = 'none';
+        }
+
+        function selectPot() {
+            document.getElementById('pot').style.display = 'flex';
+            document.getElementById('pot-buttons').style.display = 'flex';
+            document.getElementById('message').textContent = "Velg hvordan du vil koke egget!";
+            document.getElementById('cook-options').style.display = 'none';
+        }
+
+        function makeFriedEgg() {
+            addToPlate("Speilegg");
+            updateCalories(caloriesPerEgg);
+            document.getElementById('pan').textContent = "🥚🍳 Speilegg!";
+            document.getElementById('message').textContent = "Du lagde et speilegg!";
+            hideButtons();
+        }
+
+        function makeScrambledEgg() {
+            addToPlate("Eggerøre");
+            updateCalories(caloriesPerEgg);
+            document.getElementById('pan').textContent = "🥚🍳 Eggerøre!";
+            document.getElementById('message').textContent = "Du lagde eggerøre!";
+            hideButtons();
+        }
+
+        function makeHardBoiledEgg() {
+            addToPlate("Hardkokt egg");
+            updateCalories(caloriesPerEgg);
+            document.getElementById('pot').textContent = "🥚🍲 Hardkokt egg!";
+            document.getElementById('message').textContent = "Du lagde et hardkokt egg!";
+            hideButtons();
+        }
+
+        function makeSoftBoiledEgg() {
+            addToPlate("Bløtkokt egg");
+            updateCalories(caloriesPerEgg);
+            document.getElementById('pot').textContent = "🥚🍲 Bløtkokt egg!";
+            document.getElementById('message').textContent = "Du lagde et bløtkokt egg!";
+            hideButtons();
+        }
+
+        function addToPlate(type) {
+            plateContent.push(type);
+            updatePlateMessage();
+        }
+
+        function updatePlateMessage() {
+            const plateMessage = document.getElementById('plate-message');
+            if (plateContent.length === 0) {
+                plateMessage.textContent = "Ingenting på tallerkenen enda.";
+            } else {
+                plateMessage.textContent = "På tallerkenen: " + plateContent.join(", ");
+            }
+        }
+
+        function updateCalories(amount) {
+            totalCalories += amount;
+            document.getElementById('calories-message').textContent = `Totale kalorier: ${totalCalories}`;
+        }
+
+        function chooseEggCount() {
+            let eggCount = prompt("Hvor mange egg vil du lage? (f.eks. 6)");
+            eggCount = parseInt(eggCount);
+            if (isNaN(eggCount) || eggCount <= 0) {
+                alert("Vennligst skriv inn et gyldig tall.");
+            } else {
+                for (let i = 0; i < eggCount; i++) {
+                    addToPlate("Egg");
+                    updateCalories(caloriesPerEgg);
+                }
+            }
+        }
+
+        function resetEgg() {
+            document.querySelector('.egg').style.display = 'flex';
+            document.getElementById('pan').style.display = 'none';
+            document.getElementById('pot').style.display = 'none';
+            document.getElementById('pan-buttons').style.display = 'none';
+            document.getElementById('pot-buttons').style.display = 'none';
+            document.getElementById('message').textContent = "Prøv å klekke egget!";
+        }
+
+        function restartGame() {
+            plateContent = [];
+            totalCalories = 0;
+            updatePlateMessage();
+            document.getElementById('protein-message').textContent = "Total protein: 0 gram";
+            document.getElementById('calories-message').textContent = "Totale kalorier: 0";
+            resetEgg();
+        }
+
+        function eatAllEggs() {
+            const proteinPerEgg = 6;
+            const totalProtein = plateContent.length * proteinPerEgg;
+            
+            document.getElementById('protein-message').textContent = `Total protein: ${totalProtein} gram`;
+            
+            plateContent = [];
+            updatePlateMessage();
+        }
+
+        function hideButtons() {
+            document.getElementById('pan-buttons').style.display = 'none';
+            document.getElementById('pot-buttons').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
